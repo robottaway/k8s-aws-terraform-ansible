@@ -1,4 +1,4 @@
-# Kubernetes not the hardest way (or "Provisioning a Kubernetes Cluster on AWS using Terraform and Ansible")
+# Kubernetes on AWS care of Terraform and Ansible
 
 A worked example to provision a Kubernetes cluster on AWS from scratch, using
 Terraform and Ansible. A scripted version of the famous tutorial
@@ -15,7 +15,6 @@ for details about goals, design decisions and simplifications.
 - HTTPS between components and control API
 - Sample *nginx* service deployed to check everything works
 
-*This is a learning tool, not a production-ready setup.*
 
 ## Install Tools on Laptop
 
@@ -24,33 +23,42 @@ tools:
 
 - Terraform (tested with Terraform 0.9.3; **NOT compatible with Terraform 0.6.x**)
 - Python (tested with Python 2.7.9, may be not compatible with older versions; requires Jinja2 2.8)
-- Python *netaddr* module (pip install netaddr)
-- Ansible (tested with Ansible 2.1.0.0)
-- *cfssl* and *cfssljson*:  https://github.com/cloudflare/cfssl
-- Kubernetes CLI https://kubernetes.io/docs/tasks/kubectl/install/
+- Create a virtualenv for your Python env
+  - Python netaddr module (pip install netaddr)
+  - Ansible `pip install ansible` (tested with Ansible 2.3.0.0)
+  - Python boto `pip install boto`
+- [*cfssl* and *cfssljson*](https://github.com/cloudflare/cfssl)
+- [Kubernetes CLI](https://kubernetes.io/docs/tasks/kubectl/install/)
 - SSH Agent
-- (optionally) AWS CLI
 
 
 ## AWS Credentials
 
-You will need a key pair for SSH access to hosts and access key id and secret
-access key for api access.
+You will need a EC3 key pair for SSH access to hosts and access key id and
+secret access key for api access.
+
 
 ### AWS KeyPair
 
 You need a valid AWS Identity (`.pem`) file and the corresponding Public Key.
-Terraform imports the [KeyPair](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html)
-in your AWS account. Ansible uses the Identity to SSH into machines.
-
 Please read [AWS Documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#how-to-generate-your-own-key-and-import-it-to-aws)
-about supported formats.
+about supported formats. If you don't have a keypair create or import one.
+
+Use Terraform to import the [KeyPair](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html)
+from your AWS account. For example with a key called k8s-machine
+`terraform import aws_key_pair.default_keypair k8s-machines`
+
+Later Ansible uses the Identity to SSH into machines.
 
 Ansible will use the SSH identity loaded by SSH agent, add the PEM file from
 creating a key pair:
 ```
 $ ssh-add <keypair-name>.pem
 ```
+
+You will need to generate the public key also which will go in the
+terraform.tfvars file in the next section. [This article](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#retrieving-the-public-key)
+from AWS explains how to generate the public key from private key.
 
 ### AWS API Credentials
 
@@ -67,17 +75,18 @@ If you plan to use AWS CLI you have to set `AWS_DEFAULT_REGION`.
 
 ## Configuring Terraform
 
-Terraform expects some variables to define your working environment:
+Terraform requires some variables be defined:
 
 - `control_cidr`: Instances will accept traffic from only this CDIR. e.g. `123.45.67.89/32` (mandatory). Use your laptops public IP.
-- `default_keypair_public_key`: Valid public key corresponding to the Identity you will use to SSH into VMs. e.g. `"ssh-rsa AAA....xyz"` (mandatory)
+- `default_keypair_public_key`: see AWS Credentials section on generating this if needed
+- `default_keypair_name`: name of EC2 keypair
 
 **Note that Instances and Kubernetes API will be accessible only from the
 "control IP"**. If you fail to set it correctly, you will not be able to SSH into machines or run Ansible playbooks.
 
 You may optionally redefine:
 
-- `default_keypair_name`: Fill in name you used when setting up key pair above (Default: "k8s-not-the-hardest-way")
+- `default_keypair_name`: Fill in name you used when setting up key pair above (Default: "k8s-sandbox")
 - `vpc_name`: VPC Name. Must be unique in the AWS Account (Default: "kubernetes")
 - `elb_name`: ELB Name for Kubernetes API. Can only contain characters valid for DNS names. Must be unique in the AWS Account (Default: "kubernetes")
 - `owner`: `Owner` tag added to all AWS resources. Can be used to filter.
@@ -89,8 +98,8 @@ Sample `terraform.tfvars`:
 ```
 default_keypair_public_key = "ssh-rsa AAA...zzz"
 control_cidr = "123.45.67.89/32"
-default_keypair_name = "lorenzo-glf"
-vpc_name = "SRE-k8s VPC"
+default_keypair_name = "k8s"
+vpc_name = "sre-k8s vpc"
 elb_name = "sre-k8s-elb"
 owner = "Site Reliabilty"
 ```
@@ -126,6 +135,7 @@ Outputs:
 
 you may show them at any moment with `terraform output`.
 
+
 ### Generated SSH config
 
 Terraform generates `ssh.cfg`, SSH configuration file in the project directory.
@@ -145,12 +155,18 @@ Run Ansible commands from `./ansible` subdirectory.
 We have multiple playbooks that will need to be run to finish setting up your
 cluster.
 
+
 ### Install and set up Kubernetes cluster
 
 Install Kubernetes components and *etcd* cluster.
 ```
 $ ansible-playbook infra.yaml
 ```
+
+NOTE: If Terraform complains about finding cfssl(json) you probably are using
+~ rather than $HOME when defining locations in $PATH. Either use $HOME or use
+the full path to the location containing cfssl(json).
+
 
 ### Configure Kubernetes CLI on Laptop
 
@@ -181,12 +197,14 @@ ip-10-43-0-31.eu-west-1.compute.internal   Ready     6m
 ip-10-43-0-32.eu-west-1.compute.internal   Ready     6m
 ```
 
+
 ### Setup Pod cluster routing
 
 Set up additional routes for traffic between Pods.
 ```
 $ ansible-playbook kubernetes-routing.yaml
 ```
+
 
 ### Smoke test: Deploy *nginx* service
 

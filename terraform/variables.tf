@@ -8,7 +8,6 @@ variable default_keypair_public_key {
 
 variable default_keypair_name {
   description = "Name of the KeyPair used for all nodes"
-  default = "k8s-sandbox"
 }
 
 

@@ -58,5 +58,8 @@ Temporary Items
 ### Ansible ###
 *.retry
 
+# VIM
+*swp
+
 ### credentials
 awscreds.sh
