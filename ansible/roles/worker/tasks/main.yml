@@ -48,14 +48,18 @@
     mode: 0755
   with_items: # Remote-to-remote copy doesn't support file glob yet
     - docker
+    - dockerd
     - docker-containerd
     - docker-containerd-ctr
     - docker-containerd-shim
     - docker-runc
+    - docker-proxy
+    - docker-init
   become: true
 
-- name: Add docker systemd unit
+- name: Add dockerd systemd unit
   template:
+    # TODO rename to dockerd
     src: docker.service.j2
     dest: /etc/systemd/system/docker.service
     mode: 700
@@ -71,21 +75,21 @@
 ###########
 
 - name: Create CNI dir
-  file: path=/opt/cni state=directory
+  file: path=/opt/cni/bin state=directory
   become: true
 
 - name: Download CNI binaries
   get_url:
     url: "{{ cni_download_url }}"
     dest: "/usr/local/src"
-    # TODO Add hash check
+    checksum: "{{ cni_package_checksum }}"
   become: true
 
 - name: Unpack CNI binaries
   unarchive:
     copy: no
     src: "/usr/local/src/{{ cni_package_file }}"
-    dest: "/opt/cni/"
+    dest: "/opt/cni/bin"
     creates: "/opt/cni/bin/cnitool"
   become: true
 
