@@ -23,7 +23,7 @@ tools:
 
 - Terraform (tested with Terraform 0.9.3; **NOT compatible with Terraform 0.6.x**)
 - Python (tested with Python 2.7.9, may be not compatible with older versions; requires Jinja2 2.8)
-- Create a virtualenv for your Python env
+- Create a [virtualenv](https://virtualenv.pypa.io/en/stable/) for your Python env
   - Python netaddr module (pip install netaddr)
   - Ansible `pip install ansible` (tested with Ansible 2.3.0.0)
   - Python boto `pip install boto`
