@@ -1,11 +1,12 @@
 [Unit]
 Description=Kubernetes Kubelet
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
-After=docker.service
-Requires=docker.service
+After=dockerd.service
+Requires=dockerd.service
 
 [Service]
 ExecStart=/usr/bin/kubelet \
+  --address {{ kubelet_address }} \
   --allow-privileged=true \
   --api-servers={% for node in groups['controller'] %}https://{{ hostvars[node].ansible_eth0.ipv4.address }}:6443{% if not loop.last %},{% endif %}{% endfor %} \
   --cloud-provider= \

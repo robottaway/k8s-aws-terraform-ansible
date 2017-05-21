@@ -1,4 +1,8 @@
 ---
 
-kubernetes_version: "v1.6.2"
-kubernetes_download_path: "https://storage.googleapis.com/kubernetes-release/release/{{ kubernetes_version }}/bin/linux/amd64"
+kube_apiserver_checksum: "sha1:9acf81d064c4f6e61c3aec2635a827557d3ef522"
+kube_apiserver_download_url: "{{ kubebins_download_path}}/kube-apiserver"
+kube_controller_manager_checksum: "sha1:0cd2345872e2ce00106012de9f0f1e40801e1917"
+kube_controller_manager_download_url: "{{ kubebins_download_path}}/kube-controller-manager"
+kube_scheduler_checksum: "sha1:0815b0cdc2542652f9af7909c7d51f3934b8257d"
+kube_scheduler_download_url: "{{ kubebins_download_path}}/kube-scheduler"

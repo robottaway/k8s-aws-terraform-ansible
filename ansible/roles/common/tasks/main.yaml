@@ -7,6 +7,24 @@
 # Set hostname to internal DNS FQN. Default name is not fully qualified.
 # As nodes register themselves using hostname, if not FQN other nodes will not be able to resolve it. 
 
+- name: Add WireGuard APT repo
+  apt_repository:
+    repo: 'ppa:wireguard/wireguard'
+    state: present
+  become: true
+
+- name: Install WireGuard DKMS
+  apt:
+      name: wireguard-dkms
+      update_cache: true
+  become: true
+
+- name: Install WireGuard Tools
+  apt:
+      name: wireguard-tools
+      update_cache: true
+  become: true
+
 - name: Add internal DNS name to hosts file
   lineinfile:
     dest: /etc/hosts
