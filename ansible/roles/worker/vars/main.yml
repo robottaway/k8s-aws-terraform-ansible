@@ -2,10 +2,16 @@
 
 docker_version: "1.13.1"
 docker_package_file: "docker-{{ docker_version }}.tgz"
+docker_package_checksum: "sha1:0ff46d8eea0c694f349e1d40cdc10200a1a19e2c"
 docker_download_url: "https://get.docker.com/builds/Linux/x86_64/{{ docker_package_file }}"
+
 cni_version: "v0.5.2"
 cni_package_file: "cni-amd64-{{ cni_version }}.tgz"
 cni_package_checksum: "sha1:71f411080245aa14d0cc06f6824e8039607dd9e9"
 cni_download_url: "https://github.com/containernetworking/cni/releases/download/{{ cni_version }}/{{ cni_package_file }}"
-kubernetes_version: "v1.6.2"
-kubelet_download_path: "https://storage.googleapis.com/kubernetes-release/release/{{ kubernetes_version }}/bin/linux/amd64"
+
+kubelet_checksum: "sha1:57afca200aa6cec74fcc3072cae12385014f59c0"
+kubelet_download_url: "{{ kubebins_download_path}}/kubelet"
+kube_proxy_checksum: "sha1:b0703afd9d7b125a5509f2b3cb733545efa53c73"
+kube_proxy_download_url: "{{ kubebins_download_path}}/kube-proxy"
+kubelet_address: "0.0.0.0"

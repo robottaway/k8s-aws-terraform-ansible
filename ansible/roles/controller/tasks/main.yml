@@ -25,19 +25,44 @@
 # Kubernetes
 #############
 
-- name: Download Kuberneters controller binaries
+- name: Download kube-apiserver binary 
   get_url:
-    url: "{{ kubernetes_download_path }}/{{ item }}"
+    url: "{{ kube_apiserver_download_url }}"
     dest: /usr/bin
     owner: root
     group: root
     mode: 0755
-    # TODO Add hash check
-  with_items:
-    - kube-apiserver
-    - kube-controller-manager
-    - kube-scheduler
-    - kubectl
+    checksum: "{{ kube_apiserver_checksum }}"
+  become: true
+
+- name: Download kube-controller-manager binary 
+  get_url:
+    url: "{{ kube_controller_manager_download_url }}"
+    dest: /usr/bin
+    owner: root
+    group: root
+    mode: 0755
+    checksum: "{{ kube_controller_manager_checksum }}"
+  become: true
+
+- name: Download kube-scheduler binary 
+  get_url:
+    url: "{{ kube_scheduler_download_url }}"
+    dest: /usr/bin
+    owner: root
+    group: root
+    mode: 0755
+    checksum: "{{ kube_scheduler_checksum }}"
+  become: true
+
+- name: Download kubectl binary
+  get_url:
+    url: "{{ kubectl_download_url }}"
+    dest: "/usr/bin"
+    group: root
+    owner: root
+    mode: 0755
+    checksum: "{{ kubectl_checksum }}"
   become: true
 
 - name: Copy Authentication and Authorisation files

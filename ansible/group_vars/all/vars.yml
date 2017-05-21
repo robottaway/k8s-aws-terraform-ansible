@@ -1,6 +1,11 @@
 ---
 
 internal_cidr: "10.0.0.0/8" # Includes VPC and Kubernetes subnets
+
+kubernetes_version: "v1.6.2"
+kubebins_download_path: "https://storage.googleapis.com/kubernetes-release/release/{{ kubernetes_version }}/bin/linux/amd64" # URL path to where K8s binaries live
+kubectl_checksum: "sha1:984095cd0fe8a8172ab92e2ee0add49dfc46e0c2"
+kubectl_download_url: "{{ kubebins_download_path}}/kubectl"
 kubernetes_service_cluster_cidr: "10.32.0.0/24"
 kubernetes_pod_cluster_cidr: "10.200.0.0/16"
 kubernetes_cluster_dns: "10.32.0.10"

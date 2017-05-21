@@ -4,8 +4,8 @@
   command: systemctl daemon-reload
   become: true
 
-- name: Enable docker service
-  command: systemctl enable docker
+- name: Enable dockerd service
+  command: systemctl enable dockerd
   become: true
 
 - name: Enable kubelet service
@@ -16,9 +16,9 @@
   command: systemctl enable kube-proxy
   become: true
 
-- name: Restart docker service
+- name: Restart dockerd service
   service:
-    name: docker
+    name: dockerd
     state: restarted
     enabled: yes
   become: true

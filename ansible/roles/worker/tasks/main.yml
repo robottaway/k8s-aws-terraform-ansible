@@ -29,7 +29,7 @@
   get_url:
     url: "{{ docker_download_url }}"
     dest: "/usr/local/src"
-    # TODO Add hash check
+    checksum: "{{ docker_package_checksum }}"
   become: true
 
 - name: Unpack docker binaries
@@ -59,19 +59,18 @@
 
 - name: Add dockerd systemd unit
   template:
-    # TODO rename to dockerd
-    src: docker.service.j2
-    dest: /etc/systemd/system/docker.service
+    src: dockerd.service.j2
+    dest: /etc/systemd/system/dockerd.service
     mode: 700
   become: true
   notify:
     - Reload systemd
-    - Enable docker service
-    - Restart docker service
+    - Enable dockerd service
+    - Restart dockerd service
 
 
 ###########
-# Kubelet
+# kube* Binaries and Configuration
 ###########
 
 - name: Create CNI dir
@@ -97,21 +96,37 @@
   file: path=/var/lib/kubelet state=directory
   become: true
 
-- name: Download Kubelets binaries
+- name: Download kubelet binary
   get_url:
-    url: "{{ kubelet_download_path}}/{{ item }}"
+    url: "{{ kubelet_download_url }}"
     dest: "/usr/bin"
     group: root
     owner: root
     mode: 0755
-    # TODO Add hash check
-  with_items:
-    - kubectl
-    - kube-proxy
-    - kubelet
+    checksum: "{{ kubelet_checksum }}"
   become: true
 
-- name: Add Kubelet configuration
+- name: Download kubectl binary
+  get_url:
+    url: "{{ kubectl_download_url }}"
+    dest: "/usr/bin"
+    group: root
+    owner: root
+    mode: 0755
+    checksum: "{{ kubectl_checksum }}"
+  become: true
+
+- name: Download kube-proxy binary
+  get_url:
+    url: "{{ kube_proxy_download_url }}"
+    dest: "/usr/bin"
+    group: root
+    owner: root
+    mode: 0755
+    checksum: "{{ kube_proxy_checksum }}"
+  become: true
+
+- name: Add kubelet configuration
   template:
     src: kubeconfig.j2
     dest: /var/lib/kubelet/kubeconfig
@@ -128,10 +143,6 @@
     - Reload systemd
     - Enable kubelet service
     - Restart kubelet service
-
-#############
-# Kube-proxy
-#############
 
 - name: Add kube-proxy systemd unit
   template:
